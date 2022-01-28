@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper    	
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"     
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+	<mapper namespace="recommend.mapper.RecommendBoardMapper">
+		<insert id="insertRecommend_Board" parameterType="recommend.model.RecommendBoardVO">
+			<selectKey order="BEFORE" keyProperty="recomm_num" resultType="int">
+				select seq_recommend_board.nextval from dual
+			</selectKey>
+			insert into recommend_board(recomm_num,member_id,recomm_title,recomm_content,recomm_reg_date)
+			values(#{recomm_num},#{member_id},#{recomm_title},#{recomm_content},sysdate + 9/24)
+		</insert>
+		<update id="updateRecommend_Board" parameterType="recommend.model.RecommendBoardVO">
+			update recommend_board
+			set recomm_title = #{recomm_title},
+				recomm_content = #{recomm_content}
+			where recomm_num = #{recomm_num}
+		</update>
+		<!-- 조회수 증가 -->
+		<update id="updateRecommend_Count">
+			update recommend_board
+			set recomm_read_count = recomm_read_count + 1
+			where recomm_num = #{recomm_num}
+		</update>
+		<!-- 댓글수 증가 -->
+		<update id="updateReply_Count">
+			update recommend_board 
+			set reply_count = reply_count + #{amount}
+			where recomm_num = #{recomm_num}
+		</update>
+		<delete id="deleteRecommend_Board" parameterType="int">
+			delete from recommend_board where recomm_num = #{recomm_num}
+		</delete>
+		
+		<select id="selectRecommend_Board" parameterType="int" resultType="recommend.model.RecommendBoardVO">
+			select *from recommend_board where recomm_num = #{recomm_num}
+		</select>
+		<select id="selectAllRecommend_Board" resultType="recommend.model.RecommendBoardVO">
+			select *from recommend_board order by recomm_num desc
+		</select>
+		<select id="selectRecommend_Board_Id" parameterType="String" resultType="recommend.model.RecommendBoardVO">
+			select *from recommend_board where member_id = #{member_id}
+			order by recomm_reg_date desc
+		</select>
+		<select id="selectRecentFree" resultType="recommend.model.RecommendBoardVO">
+		SELECT * 
+		  FROM ( SELECT * FROM recommend_board order by recomm_reg_date desc)
+	  	 WHERE rownum between 1 and 5
+</select>
+		<!-- search -->
+		<!-- 검색기능 위한 sql(다른 쿼리에서 반복될 때 사용, 나중에 include -->
+		<sql id="criteriaDTO">
+			<trim prefix="(" suffix=") AND " prefixOverrides="OR">
+				<foreach collection="typeArr" item="type">
+					<trim prefix="OR">
+						<choose>
+							<when test="type == 'T'.toString()">
+								recomm_title like '%'||#{keyword}||'%'
+							</when>
+							<when test="type == 'C'.toString()">
+								recomm_content like '%'||#{keyword}||'%'
+							</when>
+							<when test="type == 'I'.toString()">
+								member_id like '%'||#{keyword}||'%'
+							</when>
+						</choose>
+					</trim>
+				</foreach>
+			</trim>
+		</sql>
+		<!-- paging (파라미터 pageNum, amount)-->
+		<select id="getListWithPaging"
+			resultType="recommend.model.RecommendBoardVO">
+			  <!-- 검색기능 추가 동적쿼리 -->
+			  <![CDATA[
+				  select 
+					rNum as recomm_num, member_id, recomm_title, recomm_content ,recomm_reg_date,recomm_modi_date,recomm_read_count,recomm_recomm_count,recomm_disrecomm_count,
+				  	(SELECT count(*) FROM recommend_reply WHERE recomm_num = rNum) AS REPLY_COUNT
+				  from 
+				      (select /*+INDEX_DESC(recommend_board pk_recomm_num) */
+				        rownum as rn, recomm_num rNum, member_id, recomm_title, recomm_content ,recomm_reg_date,recomm_modi_date,recomm_read_count,recomm_recomm_count,recomm_disrecomm_count,reply_count
+				      from recommend_board
+				      where 
+			  ]]>
+			  <include refid="criteriaDTO"></include>
+ 				<![CDATA[ 
+ 					rownum <= #{pageNum} * #{amount})
+ 					WHERE rn > (#{pageNum} - 1) * #{amount}
+ 				]]>
+		</select>
+		
+		<select id="getTotalCount" resultType="int">
+			select count(*) from recommend_board
+			where
+			<include refid="criteriaDTO"></include>
+			recomm_num > 0
+		</select>
+		
+		<!-- block 처리 -->
+	<update id="updateBlock">
+		UPDATE RECOMMEND_BOARD SET BLOCK = #{block} WHERE recomm_num = #{num}
+	</update>
+		
+	</mapper>

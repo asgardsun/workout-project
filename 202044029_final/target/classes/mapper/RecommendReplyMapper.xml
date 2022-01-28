@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper    	
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"     
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+	<mapper namespace="recommend.mapper.RecommendReplyMapper">
+		<insert id="insertRecommend_Reply" parameterType="recommend.model.RecommendReplyVO">
+			insert into recommend_reply(recomm_reply_num,recomm_num,member_id,recomm_reply_content,recomm_reply_reg_date)
+			values(seq_recommend_reply.nextval,#{recomm_num},#{member_id},#{recomm_reply_content},sysdate + 9/24)
+		</insert>
+		<update id="updateRecommend_Reply" parameterType="recommend.model.RecommendReplyVO">
+			update recommend_reply
+			set recomm_reply_content = #{recomm_reply_content}
+			where recomm_reply_num = #{recomm_reply_num}
+		</update>
+		<delete id="deleteRecommend_Replys" parameterType="int">
+			delete from recommend_reply where recomm_num = #{recomm_num}
+		</delete>
+		<delete id="deleteRecommend_Reply" parameterType="int">
+			delete from recommend_reply where recomm_reply_num = #{recomm_reply_num}
+		</delete>
+		<select id="selectRecommend_Reply" parameterType="int" resultType="recommend.model.RecommendReplyVO">
+			select *from recommend_reply where recomm_reply_num = #{recomm_reply_num}
+		</select>
+		<select id="selectAllRecommend_Reply" parameterType="int" resultType="recommend.model.RecommendReplyVO">
+			select recomm_reply_num,recomm_num,member_id,recomm_reply_content,
+				(select to_char(recomm_reply_reg_date,'yyyy-mm-dd hh12:mi:ss') from recommend_reply where recomm_reply_num = r.recomm_reply_num) as recomm_reply_reg_date
+			from recommend_reply r where recomm_num = #{recomm_num} order by recomm_reply_num desc
+		</select>
+		<!-- 댓글 총 개수 -->
+		<select id="getReplyCnt" resultType="int">
+			SELECT count(*) AS 
+			FROM recommend_reply WHERE recomm_num = #{recomm_num}
+		</select>
+		<!-- 댓글 수 증가를 위해 댓글 번호로 해당 게시글 번호 얻어오기  -->
+		<select id="getBoardNum" resultType="int">
+			SELECT recomm_num FROM recommend_reply WHERE recomm_reply_num = #{recomm_reply_num}
+		</select>
+		
+		<update id="updateBlock">
+		UPDATE recommend_reply SET BLOCK = #{block} WHERE recomm_reply_num = #{num}
+		</update>
+	</mapper>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"     
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+	<mapper namespace="member.mapper.MemberAuthMapper">
+		<insert id="insertMember_Auth" parameterType="member.model.MemberAuthVO">
+			insert into member_auth(member_id, member_auth)
+			values(#{member_id},#{member_auth})
+		</insert>
+		<update id="updateMember_Auth" parameterType="member.model.MemberAuthVO">
+			update member_auth
+			set member_auth = #{member_auth} where member_id = #{member_id}
+		</update>
+		<delete id="deleteMember_Auth" parameterType="String">
+			delete from member_auth where member_id = #{member_id} and member_auth = #{member_auth}
+		</delete>
+		<select id="selectMember_Auth" parameterType="String" resultType="member.model.MemberAuthVO">
+			select *from member_auth where member_id = #{member_id}
+		</select>
+		<select id="selectAllMember_Auth" resultType="member.model.MemberAuthVO">
+			select *from member_auth
+		</select>
+		<select id="selectMemberAuthsById" parameterType="string" resultType="string">
+			select MEMBER_AUTH from member_auth where member_id = #{member_id}
+		</select>
+	</mapper>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper    	
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"     
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+	<mapper namespace="recommend.mapper.RecommendImgMapper">
+		<insert id="insertRecomm_Img" parameterType="recommend.model.RecommendImgVO">
+			insert into recommend_img(recomm_uuid,recomm_num,recomm_upload_path,recomm_filename)
+			values(#{recomm_uuid},#{recomm_num},#{recomm_upload_path},#{recomm_filename})
+		</insert>
+		<update id="updateRecomm_Img" parameterType="recommend.model.RecommendImgVO">
+			update recommend_img
+			set recomm_filename = #{recomm_filename}
+			where recomm_num = #{recomm_uuid}
+		</update>
+		<delete id="deleteRecomm_Img_uuid" parameterType="String">
+			delete from recommend_img where recomm_uuid = #{recomm_uuid}
+		</delete>
+		<delete id="deleteRecomm_Img_num" parameterType="int">
+			delete from recommend_img where recomm_num = #{recomm_num}
+		</delete>
+		<select id="selectRecomm_ImgList_Count" parameterType="int" resultType="int">
+			select count(*) from recommend_img where recomm_num = #{recomm_num}
+		</select>
+		<select id="selectRecomm_Img_num" parameterType="int" resultType="recommend.model.RecommendImgVO">
+			select *from recommend_img where recomm_num = #{recomm_num}
+			order by recomm_uuid asc
+		</select>
+		<select id="selectRecomm_Img_uuid" parameterType="String" resultType="recommend.model.RecommendImgVO">
+			select *from recommend_img where recomm_uuid = #{recomm_uuid}
+		</select>
+		<select id="selectAllRecomm_Img" resultType="recommend.model.RecommendImgVO">
+			select *from recommend_img 
+			order by recomm_uuid asc
+		</select>
+	</mapper>

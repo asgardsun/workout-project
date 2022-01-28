@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper    	
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"     
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+	<mapper namespace="review.mapper.ReviewReplyMapper">
+		<insert id="insertReview_Reply" parameterType="review.model.ReviewReplyVO">
+			insert into review_reply(review_reply_num,review_num,member_id,review_reply_content,review_reply_reg_date)
+			values(seq_review_reply.nextval,#{review_num},#{member_id},#{review_reply_content},sysdate + 9/24)
+		</insert>
+		<update id="updateReview_Reply" parameterType="review.model.ReviewReplyVO">
+			update review_reply
+			set review_reply_content = #{review_reply_content}
+			where review_reply_num = #{review_reply_num}
+		</update>
+		<delete id="deleteReview_Replys" parameterType="int">
+			delete from review_reply where review_num = #{review_num}
+		</delete>
+		<delete id="deleteReview_Reply" parameterType="int">
+			delete from review_reply where review_reply_num = #{review_reply_num}
+		</delete>
+		<select id="selectReview_Reply" parameterType="int" resultType="review.model.ReviewReplyVO">
+			select *from review_reply where review_reply_num = #{review_reply_num}
+		</select>
+		<select id="selectAllReview_Reply" parameterType="int" resultType="review.model.ReviewReplyVO">
+			select review_reply_num,review_num,member_id,review_reply_content,
+				(select to_char(review_reply_reg_date,'yyyy-mm-dd hh12:mi:ss') from review_reply where review_reply_num = r.review_reply_num) as review_reply_reg_date
+			from review_reply r where review_num = #{review_num} order by review_reply_num desc
+		</select>
+		<!-- 댓글 총 개수 -->
+		<select id="getReplyCnt" resultType="int">
+			SELECT count(*) AS 
+			FROM review_reply WHERE review_num = #{review_num}
+		</select>
+		<!-- 댓글 수 증가를 위해 댓글 번호로 해당 게시글 번호 얻어오기  -->
+		<select id="getBoardNum" resultType="int">
+			SELECT review_num FROM review_reply WHERE review_reply_num = #{review_reply_num}
+		</select>
+		
+	</mapper>

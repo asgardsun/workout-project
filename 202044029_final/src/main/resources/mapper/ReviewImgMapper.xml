@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper    	
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"     
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+	<mapper namespace="review.mapper.ReviewImgMapper">
+		<insert id="insertReview_Img" parameterType="review.model.ReviewImgVO">
+			insert into review_img(review_uuid,review_num,review_upload_path,review_filename)
+			values(#{review_uuid},#{review_num},#{review_upload_path},#{review_filename})
+		</insert>
+		<update id="updateReview_Img" parameterType="review.model.ReviewImgVO">
+			update review_img
+			set review_filename = #{review_filename}
+			where review_uuid = #{review_uuid}
+		</update>
+		<delete id="deleteReview_Img_uuid" parameterType="String">
+			delete from review_img where review_uuid = #{review_uuid}
+		</delete>
+		<delete id="deleteReview_Img_num" parameterType="int">
+			delete from review_img where review_num = #{review_num}
+		</delete>
+		<select id="selectReview_ImgList_Count" parameterType="int" resultType="int">
+			select count(*) from review_img where review_num = #{review_num}
+		</select>
+		<select id="selectReview_Img_uuid" parameterType="String" resultType="review.model.ReviewImgVO">
+			select *from review_img where review_uuid = #{review_uuid}
+		</select>
+		<select id="selectReview_Img_num" parameterType="int" resultType="review.model.ReviewImgVO">
+			select *from review_img where review_num = #{review_num}
+			order by review_uuid asc
+		</select>
+		<select id="selectAllReview_Img" resultType="review.model.ReviewImgVO">
+			select *from review_img order by review_uuid asc
+		</select>
+	</mapper>

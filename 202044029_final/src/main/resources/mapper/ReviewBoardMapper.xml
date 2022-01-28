@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper    	
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"     
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="review.mapper.ReviewBoardMapper">
+	<insert id="insertReview_Board"
+		parameterType="review.model.ReviewBoardVO">
+		<selectKey order="BEFORE" keyProperty="review_num" resultType="int">
+			select seq_review_board.nextval from dual
+		</selectKey>
+		insert into review_board(review_num,member_id,review_title,review_exh_name,review_content,review_reg_date)
+		values(#{review_num},#{member_id},#{review_title},#{review_exh_name},#{review_content},sysdate + 9/24)
+	</insert>
+	<update id="updateReview_Board"
+		parameterType="review.model.ReviewBoardVO">
+		update review_board
+		set review_title = #{review_title},
+		review_content = #{review_content}
+		where review_num = #{review_num}
+	</update>
+	<!-- 댓글수 증가 -->
+	<update id="updateReply_count">
+		update review_board 
+		set reply_count = reply_count + #{amount}
+		where review_num = #{review_num}
+	</update>
+	<!-- 조회수 증가 -->
+	<update id="updateReview_count">
+		update review_board
+		set review_read_count = review_read_count + 1
+		where review_num = #{review_num}
+	</update>
+	<delete id="deleteReview_Board" parameterType="int">
+		delete from review_board where review_num = #{review_num}
+	</delete>
+	<select id="selectReview_Board" parameterType="int"
+		resultType="review.model.ReviewBoardVO">
+		select *from review_board where review_num = #{review_num}
+	</select>
+	<select id="selectReview_Board_Id" parameterType="String"
+		resultType="review.model.ReviewBoardVO">
+		select *from review_board where member_id = #{member_id}
+		order by review_reg_date desc
+	</select>
+	<select id="selectAllReview_Board"
+		resultType="review.model.ReviewBoardVO">
+		select review_num, member_id, review_title, review_exh_name, review_content ,review_reg_date,review_modi_date,review_read_count,review_recomm_count,review_disrecomm_count,
+				(select count(*) from review_reply where review_reply_num = r.review_num) as reply_count
+		from review_board r order by review_num desc
+	</select>
+	<!-- 전시정보 탭에 넣을 관람자 후기 -->
+	<select id="selectExhReview" parameterType="String" resultType="review.model.ReviewBoardVO">
+		select *from review_board where review_exh_name = #{review_exh_name}
+	</select>
+	<!-- search -->
+	<!-- 검색기능 위한 sql(다른 쿼리에서 반복될 때 사용, 나중에 include -->
+	<sql id="criteriaDTO">
+		<trim prefix="(" suffix=") AND " prefixOverrides="OR">
+			<foreach item="type" collection="typeArr">
+				<trim prefix="OR">
+					<choose>
+						<when test="type == 'T'.toString()">
+							review_title like '%'||#{keyword}||'%'
+						</when>
+						<when test="type == 'I'.toString()">
+							member_id like '%'||#{keyword}||'%'
+						</when>
+						<when test="type == 'C'.toString()">
+							review_content like '%'||#{keyword}||'%'
+						</when>
+						<when test="type == 'E'.toString()">
+							review_exh_name like '%'||#{keyword}||'%'
+						</when>
+					</choose>
+				</trim>
+			</foreach>
+		</trim>
+	</sql>
+	
+	
+
+	
+	<!-- paging (파라미터 pageNum, amount) -->
+	<select id="getListWithPaging" resultType="review.model.ReviewBoardVO">
+		  <!-- 검색기능 추가 동적쿼리 -->
+		  <![CDATA[
+			  select 
+				rNum as review_num, member_id, review_title, review_exh_name, review_content ,review_reg_date,review_modi_date,review_read_count, review_recomm_count,review_disrecomm_count,
+					(SELECT count(*) FROM review_reply WHERE review_num = rNum) AS reply_count
+			  from 
+			      (select /*+INDEX_DESC(review_board pk_review_num) */ rownum as rn, review_num rNum, member_id, review_title, review_exh_name, review_content ,review_reg_date,review_modi_date,review_read_count,review_recomm_count,review_disrecomm_count,reply_count
+			      from review_board
+			      where 
+		  ]]>
+		  <include refid="criteriaDTO"></include>
+ 		<![CDATA[ 
+ 			 rownum <= #{pageNum} * #{amount})
+ 			 WHERE rn > (#{pageNum} - 1) * #{amount}
+ 		]]>
+	</select>
+	
+	<!-- 총페이지 구하기(검색후 페이지)-->
+	<select id="getTotalCount" resultType="int">
+		select count(*) from review_board
+		where
+		<include refid="criteriaDTO"></include>
+		review_num > 0
+	</select>
+	
+</mapper>

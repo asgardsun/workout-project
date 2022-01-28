@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+	<mapper namespace="member.mapper.MemberMapper">
+	
+		<select id="selectMember" parameterType="String"  resultMap="memberMap">
+			select mem.member_id,member_name,member_password,member_email,member_gender,member_phonenum,member_address,member_reg_date,member_status,
+			auth.member_auth from member mem Left Outer Join member_auth auth on mem.member_id = auth.member_id WHERE mem.member_id = #{member_id}
+		</select>
+
+		<insert id="insertMember" parameterType="member.model.MemberVO">
+			insert into member(member_id,member_name,member_password,member_email,member_gender,member_phonenum,member_address)
+			values(#{member_id},#{member_name},#{member_password},#{member_email},#{member_gender},#{member_phonenum},#{member_address})
+		</insert>
+		<update id="updateMember_pw" parameterType="member.model.MemberVO">
+			update member
+			set member_password = #{member_password}
+			where member_id = #{member_id}	
+		</update>
+		<update id="updateMember" parameterType="member.model.MemberVO">
+			update member
+			set member_password = #{member_password},
+				member_email = #{member_email},
+				member_phonenum = #{member_phonenum},
+				member_address = #{member_address}
+			where member_id = #{member_id}
+		</update>
+		<delete id="deleteMember" parameterType="String">
+			delete from member where member_id = #{member_id}
+		</delete>
+		<select id="selectMember_id" parameterType="String" resultType="member.model.MemberVO">
+			select * from member where member_id = #{member_id}
+		</select>
+		<select id="selectAllMember" resultType="member.model.MemberVO">
+			select *from member
+		</select>
+		<select id="selectMember_name" parameterType="string" resultType="member.model.MemberVO">
+			select *from member where member_name = #{member_name}
+		</select>	
+		
+		<resultMap type="member.model.MemberAuthVO" id="authMap">
+			<result property="member_id" column="member_id" />
+			<result property="member_auth" column="member_auth" />
+		</resultMap>
+		
+		<resultMap type="member.model.MemberVO" id="memberMap">
+			<id property="member_id" column="member_id" />
+			<result property="member_id" column="member_id" />
+			<result property="member_name" column="member_name" />
+			<result property="member_password" column="member_password" />
+			<result property="member_email" column="member_email" />
+			<result property="member_gender" column="member_gender" />
+			<result property="member_phonenum" column="member_phonenum" />
+			<result property="member_address" column="member_address" />
+			<result property="member_reg_date" column="member_reg_date" />
+			<result property="member_status" column="member_status" />
+			<collection property="authList" resultMap="authMap"/>
+		</resultMap>
+	</mapper>
